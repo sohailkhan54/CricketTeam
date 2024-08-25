@@ -42,11 +42,16 @@ app.post('/players/', async (request, response) => {
   const newPlayer = request.body
   const {playerName, jerseyNumber, role} = newPlayer
   const UpdatePlayerQuery = `INSERT INTO cricket_team (player_name, jersey_number, role)
-    VALUES (?, ?, ?)
+    VALUES (${playerName} ${jerseyNumber} ${role})
 
   `
-  let playerResponse = await db.run(UpdatePlayerQuery)
-  response.send('Player Added to Team ')
+  try {
+    await db.run(UpdatePlayerQuery, [playerName, jerseyNumber, role])
+    response.send('Player Added to Team')
+  } catch (error) {
+    console.error(error)
+    response.status(500).send('Error adding player to team')
+  }
 })
 
 app.get('/players/:playerId/', async (request, response) => {
@@ -54,15 +59,8 @@ app.get('/players/:playerId/', async (request, response) => {
   const playerQuery = `select * from cricket_team 
   where player_id = ${playerId}`
   let dbresponse = await db.get(playerQuery)
-  let ans = dbresponse => {
-    return {
-      playerId: dbresponse.player_id,
-      playerName: dbresponse.player_name,
-      jerseyNumber: dbresponse.jersey_number,
-      role: dbresponse.role,
-    }
-  }
-  response.send(dbresponse.map(player => ans(player)))
+
+  response.send(dbresponse)
 })
 
 app.put('/players/:playerId', async (request, response) => {
@@ -70,10 +68,11 @@ app.put('/players/:playerId', async (request, response) => {
   const playerDetails = request.body
   const {playerName, jerseyNumber, role} = playerDetails
   const playerDetailsUpdateQuery = `
-  update cricket_team set 
-  playerName = "Maneesh",
-  jerseryNumber = 54,
-  role = "All-rounder" `
+  UPDATE  cricket_team SET
+  playerName = "${playerName}",
+  jerseryNumber = "${jerseyNumber}",
+  role = "${role} "
+  WHERE player_id = "${playerId}`
   let updatedResponse = await db.run(playerDetailsUpdateQuery)
   response.send('Player Details Updated')
 })

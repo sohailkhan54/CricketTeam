@@ -8,3 +8,7 @@ post http://localhost:3000/players/
 
 ###
 GET http://localhost:3000/players/:playerId/
+
+
+###
+put http://localhost:3000/players/:playerId/
